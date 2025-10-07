@@ -1,9 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { DoughnutPiece } from '@/types/game.types';
+import Image from 'next/image';
+import { DoughnutPiece, SpecialEffect } from '@/types/game.types';
 import { useGameStore } from '@/stores/gameStore';
 import { DOUGHNUT_COLORS } from '@/constants/gameConfig';
+import { getDoughnutImage } from '@/utils/imageUtils';
 
 interface DoughnutCellProps {
   piece: DoughnutPiece;
@@ -21,6 +23,40 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
   const handleClick = async () => {
     if (isProcessing) return;
     
+    // Import necessary utilities
+    const { dropPieces } = await import('@/utils/gridUtils');
+    const { findMatches, calculateScore, removeMatches } = await import('@/utils/matchUtils');
+    
+    // Recursive function to process chain reactions
+    const processChainReactions = (currentGrid: DoughnutPiece[][], comboMultiplier: number = 1) => {
+      const currentMatches = findMatches(currentGrid);
+      
+      if (currentMatches.length === 0) {
+        // No more matches, we're done
+        useGameStore.getState().setProcessing(false);
+        return;
+      }
+
+      // Calculate score with combo multiplier
+      const score = calculateScore(currentMatches, comboMultiplier);
+      updateScore(score);
+      
+      // Mark matched pieces
+      currentGrid = removeMatches(currentGrid, currentMatches);
+      setGrid(currentGrid);
+
+      // Drop pieces and fill empty spaces
+      setTimeout(() => {
+        currentGrid = dropPieces(currentGrid);
+        setGrid(currentGrid);
+        
+        // Check for new matches after dropping and continue recursively
+        setTimeout(() => {
+          processChainReactions(currentGrid, Math.min(comboMultiplier + 0.5, 3));
+        }, 500);
+      }, 600);
+    };
+    
     // Special handling for SenseNet doughnut - clears entire row and column
     if (piece.type === 'sensenet') {
       useGameStore.getState().setProcessing(true);
@@ -29,7 +65,7 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
       updateScore(1000);
       
       // Clear the entire row and column
-      const newGrid = grid.map(r => r.map(p => ({ ...p })));
+      let newGrid = grid.map(r => r.map(p => ({ ...p })));
       
       // Mark entire row as matched
       for (let c = 0; c < newGrid[row].length; c++) {
@@ -43,12 +79,76 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
       
       setGrid(newGrid);
       
-      // Drop pieces and refill after animation
-      const { dropPieces } = await import('@/utils/gridUtils');
+      // Drop pieces and refill after initial animation
       setTimeout(() => {
-        const droppedGrid = dropPieces(newGrid);
-        setGrid(droppedGrid);
-        useGameStore.getState().setProcessing(false);
+        newGrid = dropPieces(newGrid);
+        setGrid(newGrid);
+        
+        // Check for matches after dropping and process chain reactions
+        setTimeout(() => {
+          processChainReactions(newGrid, 1.5);
+        }, 500);
+      }, 600);
+      
+      return;
+    }
+    
+    // Special handling for special effect pieces
+    if (hasSpecialEffect) {
+      useGameStore.getState().setProcessing(true);
+      let newGrid = grid.map(r => r.map(p => ({ ...p })));
+      
+      if (piece.specialEffect === SpecialEffect.COLOR_BOMB) {
+        // Clear all pieces of the same type
+        updateScore(500);
+        for (let r = 0; r < newGrid.length; r++) {
+          for (let c = 0; c < newGrid[r].length; c++) {
+            if (newGrid[r][c].type === piece.type) {
+              newGrid[r][c].isMatched = true;
+            }
+          }
+        }
+      } else if (piece.specialEffect === SpecialEffect.LINE_CLEAR_H) {
+        // Clear entire row
+        updateScore(300);
+        for (let c = 0; c < newGrid[row].length; c++) {
+          newGrid[row][c].isMatched = true;
+        }
+      } else if (piece.specialEffect === SpecialEffect.LINE_CLEAR_V) {
+        // Clear entire column
+        updateScore(300);
+        for (let r = 0; r < newGrid.length; r++) {
+          newGrid[r][col].isMatched = true;
+        }
+      } else if (piece.specialEffect === SpecialEffect.CROSS_CLEAR) {
+        // Clear row and column
+        updateScore(400);
+        for (let c = 0; c < newGrid[row].length; c++) {
+          newGrid[row][c].isMatched = true;
+        }
+        for (let r = 0; r < newGrid.length; r++) {
+          newGrid[r][col].isMatched = true;
+        }
+      } else if (piece.specialEffect === SpecialEffect.EXPLOSION) {
+        // Clear 3x3 area
+        updateScore(250);
+        for (let r = Math.max(0, row - 1); r <= Math.min(newGrid.length - 1, row + 1); r++) {
+          for (let c = Math.max(0, col - 1); c <= Math.min(newGrid[r].length - 1, col + 1); c++) {
+            newGrid[r][c].isMatched = true;
+          }
+        }
+      }
+      
+      setGrid(newGrid);
+      
+      // Drop pieces and process chain reactions
+      setTimeout(() => {
+        newGrid = dropPieces(newGrid);
+        setGrid(newGrid);
+        
+        setTimeout(() => {
+          processChainReactions(newGrid, 1.5);
+        }, 500);
       }, 600);
       
       return;
@@ -101,6 +201,11 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
   const backgroundColor = DOUGHNUT_COLORS[piece.type as keyof typeof DOUGHNUT_COLORS] || DOUGHNUT_COLORS.vanilla;
 
   const isSenseNet = piece.type === 'sensenet';
+  const hasSpecialEffect = piece.specialEffect !== SpecialEffect.NONE;
+  const isColorBomb = piece.specialEffect === SpecialEffect.COLOR_BOMB;
+  const isLineClear = piece.specialEffect === SpecialEffect.LINE_CLEAR_H || piece.specialEffect === SpecialEffect.LINE_CLEAR_V;
+  const isCrossClear = piece.specialEffect === SpecialEffect.CROSS_CLEAR;
+  const isExplosion = piece.specialEffect === SpecialEffect.EXPLOSION;
 
   return (
     <motion.div
@@ -120,6 +225,7 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
           flex items-center justify-center
           ${isSelected ? 'ring-4 ring-sensenet-primary ring-offset-2' : ''}
           ${isSenseNet ? 'ring-2 ring-purple-500 ring-offset-1' : ''}
+          ${hasSpecialEffect ? 'ring-2 ring-yellow-400 ring-offset-1' : ''}
           shadow-md hover:shadow-lg transition-all
           hover:scale-110 active:scale-95
         `}
@@ -134,11 +240,16 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
         onClick={handleClick}
       >
         {/* Doughnut image based on type */}
-        <img 
+        <Image 
           src={getDoughnutImage(piece.type)}
           alt={`${piece.type} doughnut`}
-          className="w-full h-full object-contain select-none pointer-events-none p-1"
+          className="select-none pointer-events-none"
           draggable={false}
+          fill
+          sizes="(max-width: 768px) 15vw, 10vw"
+          style={{ objectFit: 'contain', padding: '4px' }}
+          priority={isSenseNet}
+          quality={85}
         />
 
         {/* Selection indicator */}
@@ -169,17 +280,72 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
             }}
           />
         )}
+
+        {/* Special effect indicators */}
+        {isColorBomb && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 opacity-40"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.4, 0.6, 0.4]
+              }}
+              transition={{ 
+                duration: 1, 
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <div className="absolute top-1 right-1 text-2xl">💥</div>
+          </>
+        )}
+
+        {piece.specialEffect === SpecialEffect.LINE_CLEAR_H && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-blue-400 opacity-40"
+              animate={{ opacity: [0.4, 0.6, 0.4] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <div className="absolute top-1 right-1 text-xl">↔️</div>
+          </>
+        )}
+
+        {piece.specialEffect === SpecialEffect.LINE_CLEAR_V && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-green-400 opacity-40"
+              animate={{ opacity: [0.4, 0.6, 0.4] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <div className="absolute top-1 right-1 text-xl">↕️</div>
+          </>
+        )}
+
+        {isCrossClear && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-red-400 opacity-40"
+              animate={{ opacity: [0.4, 0.6, 0.4] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <div className="absolute top-1 right-1 text-xl">✖️</div>
+          </>
+        )}
+
+        {isExplosion && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-orange-400 opacity-40"
+              animate={{ opacity: [0.4, 0.6, 0.4] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <div className="absolute top-1 right-1 text-xl">💣</div>
+          </>
+        )}
       </div>
     </motion.div>
   );
 }
 
-function getDoughnutImage(type: string): string {
-  const imageMap: Record<string, string> = {
-    blue: '/pics/doughnut_blue.png',
-    golden: '/pics/doughnut_golden.png',
-    vanilla: '/pics/doughnut_vanilla.png',
-    sensenet: '/sensenet-logo.svg',
-  };
-  return imageMap[type] || '/pics/doughnut_vanilla.png';
-}
+

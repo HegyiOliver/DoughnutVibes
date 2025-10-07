@@ -113,38 +113,39 @@ export const useGameStore = create<GameStore>()(
         set({ grid: newGrid });
         decrementMoves();
 
-        // Process matches with delay for animation
-        setTimeout(() => {
-          const score = calculateScore(matches);
+        // Recursive function to process chain reactions
+        const processChainReactions = (currentGrid: DoughnutPiece[][], comboMultiplier: number = 1) => {
+          const currentMatches = findMatches(currentGrid);
+          
+          if (currentMatches.length === 0) {
+            // No more matches, we're done
+            set({ isProcessing: false });
+            return;
+          }
+
+          // Calculate score with combo multiplier
+          const score = calculateScore(currentMatches, comboMultiplier);
           updateScore(score);
           
           // Mark matched pieces
-          newGrid = removeMatches(newGrid, matches);
-          set({ grid: newGrid });
+          currentGrid = removeMatches(currentGrid, currentMatches);
+          set({ grid: currentGrid });
 
           // Drop pieces and fill empty spaces
           setTimeout(() => {
-            newGrid = dropPieces(newGrid);
-            set({ grid: newGrid });
+            currentGrid = dropPieces(currentGrid);
+            set({ grid: currentGrid });
             
-            // Check for new matches after dropping (chain reaction)
+            // Check for new matches after dropping and continue recursively
             setTimeout(() => {
-              const newMatches = findMatches(newGrid);
-              if (newMatches.length > 0) {
-                // Process chain matches recursively
-                const chainScore = calculateScore(newMatches, 1.5);
-                updateScore(chainScore);
-                newGrid = removeMatches(newGrid, newMatches);
-                
-                setTimeout(() => {
-                  newGrid = dropPieces(newGrid);
-                  set({ grid: newGrid, isProcessing: false });
-                }, 800);
-              } else {
-                set({ isProcessing: false });
-              }
+              processChainReactions(currentGrid, Math.min(comboMultiplier + 0.5, 3));
             }, 500);
           }, 600);
+        };
+
+        // Start processing chain reactions with initial matches
+        setTimeout(() => {
+          processChainReactions(newGrid, 1);
         }, 400);
       },
 
@@ -167,12 +168,15 @@ export const useGameStore = create<GameStore>()(
           
           let newAchievementMessage = state.achievementMessage;
           let newShowAchievement = state.showAchievement;
+          let newLevel = state.stats.level;
           
           if (currentMilestone > lastMilestone && newScore >= 1000) {
             // New achievement unlocked!
             const phraseIndex = (currentMilestone - 1) % SENSENET_CATCHPHRASES.length;
             newAchievementMessage = SENSENET_CATCHPHRASES[phraseIndex];
             newShowAchievement = true;
+            // Increment level when achievement is unlocked
+            newLevel = state.stats.level + 1;
           }
           
           return {
@@ -180,6 +184,7 @@ export const useGameStore = create<GameStore>()(
               ...state.stats,
               score: newScore,
               highScore: newHighScore,
+              level: newLevel,
             },
             lastAchievementScore: newScore,
             achievementMessage: newAchievementMessage,

@@ -129,12 +129,36 @@ export function calculateScore(matches: Match[], comboMultiplier: number = 1): n
 
 /**
  * Remove matched pieces from grid
+ * For matches of 4+, create a special effect piece
  */
 export function removeMatches(grid: DoughnutPiece[][], matches: Match[]): DoughnutPiece[][] {
   const newGrid = grid.map(row => row.map(piece => ({ ...piece })));
   const matchedPositions = new Set<string>();
+  const specialEffects = new Map<string, { effect: any, type: any }>();
 
   matches.forEach((match) => {
+    // Determine special effect based on match length
+    if (match.length >= 5) {
+      // 5+ match creates a COLOR_BOMB
+      const middleIndex = Math.floor(match.pieces.length / 2);
+      const middlePiece = match.pieces[middleIndex];
+      const key = `${middlePiece.position.row}-${middlePiece.position.col}`;
+      specialEffects.set(key, { 
+        effect: 'color-bomb',
+        type: middlePiece.type 
+      });
+    } else if (match.length === 4) {
+      // 4 match creates LINE_CLEAR
+      const middleIndex = Math.floor(match.pieces.length / 2);
+      const middlePiece = match.pieces[middleIndex];
+      const key = `${middlePiece.position.row}-${middlePiece.position.col}`;
+      const effect = match.type === 'horizontal' ? 'line-clear-horizontal' : 'line-clear-vertical';
+      specialEffects.set(key, { 
+        effect,
+        type: middlePiece.type 
+      });
+    }
+
     match.pieces.forEach((piece) => {
       const key = `${piece.position.row}-${piece.position.col}`;
       matchedPositions.add(key);
@@ -144,7 +168,14 @@ export function removeMatches(grid: DoughnutPiece[][], matches: Match[]): Doughn
   matchedPositions.forEach((key) => {
     const [row, col] = key.split('-').map(Number);
     if (newGrid[row] && newGrid[row][col]) {
-      newGrid[row][col].isMatched = true;
+      // If this position should have a special effect, don't mark as matched
+      if (specialEffects.has(key)) {
+        const special = specialEffects.get(key)!;
+        newGrid[row][col].specialEffect = special.effect;
+        newGrid[row][col].isMatched = false;
+      } else {
+        newGrid[row][col].isMatched = true;
+      }
     }
   });
 

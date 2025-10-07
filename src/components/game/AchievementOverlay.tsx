@@ -67,7 +67,7 @@ export default function AchievementOverlay({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+          className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8"
           style={{
             backgroundColor: 'rgba(0, 102, 204, 0.85)', // sensenet-primary with transparency
           }}
@@ -87,14 +87,14 @@ export default function AchievementOverlay({
               damping: 25,
               delay: 0.1,
             }}
-            className="relative max-w-2xl w-full"
+            className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Paper Component */}
-            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
               {/* Decorative gradient overlay */}
               <div
-                className="absolute top-0 left-0 right-0 h-2 opacity-20"
+                className="absolute top-0 left-0 right-0 h-1.5 sm:h-2 opacity-20"
                 style={{
                   background:
                     'linear-gradient(90deg, #0066CC 0%, #00A3E0 50%, #FF6B35 100%)',
@@ -111,11 +111,11 @@ export default function AchievementOverlay({
                   damping: 15,
                   delay: 0.3,
                 }}
-                className="flex justify-center mb-6"
+                className="flex justify-center mb-4 sm:mb-5 md:mb-6 mt-2 sm:mt-0"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sensenet-primary to-sensenet-secondary flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-sensenet-primary to-sensenet-secondary flex items-center justify-center shadow-lg">
                   <svg
-                    className="w-12 h-12 text-white"
+                    className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -139,7 +139,7 @@ export default function AchievementOverlay({
               >
                 <h2
                   id="achievement-title"
-                  className="text-3xl md:text-4xl font-bold text-center mb-4"
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4 px-2"
                   style={{ color: '#0066CC' }}
                 >
                   Achievement Unlocked!
@@ -152,7 +152,7 @@ export default function AchievementOverlay({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <p className="text-xl md:text-2xl font-semibold text-center mb-6 text-sensenet-dark">
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 sm:mb-5 md:mb-6 text-sensenet-dark px-2 break-words">
                   {catchphrase}
                 </p>
               </motion.div>
@@ -162,7 +162,7 @@ export default function AchievementOverlay({
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="w-24 h-1 mx-auto mb-6 rounded-full"
+                className="w-16 sm:w-20 md:w-24 h-0.5 sm:h-1 mx-auto mb-4 sm:mb-5 md:mb-6 rounded-full"
                 style={{
                   background:
                     'linear-gradient(90deg, #0066CC 0%, #00A3E0 100%)',
@@ -177,7 +177,7 @@ export default function AchievementOverlay({
               >
                 <blockquote
                   id="achievement-quote"
-                  className="text-base md:text-lg text-center italic text-gray-700 leading-relaxed"
+                  className="text-sm sm:text-base md:text-lg text-center italic text-gray-700 leading-relaxed px-2 sm:px-4"
                 >
                   &ldquo;{quote}&rdquo;
                 </blockquote>
@@ -188,13 +188,13 @@ export default function AchievementOverlay({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1, duration: 0.5 }}
-                className="mt-8 text-center"
+                className="mt-6 sm:mt-7 md:mt-8 text-center"
               >
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onDismiss}
-                  className="px-8 py-3 rounded-full font-semibold text-white shadow-lg hover:shadow-xl transition-shadow"
+                  className="px-6 sm:px-7 md:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-white text-sm sm:text-base shadow-lg hover:shadow-xl transition-shadow"
                   style={{
                     background:
                       'linear-gradient(135deg, #0066CC 0%, #00A3E0 100%)',
@@ -212,7 +212,7 @@ export default function AchievementOverlay({
                   repeat: Infinity,
                   ease: 'easeInOut',
                 }}
-                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-400"
+                className="absolute bottom-3 sm:bottom-4 left-1/2 transform -translate-x-1/2 text-xs sm:text-sm text-gray-400 px-2 text-center"
               >
                 Click anywhere to continue
               </motion.div>

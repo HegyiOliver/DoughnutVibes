@@ -74,6 +74,10 @@ body {
   background-size: 3000%;
   background-attachment: fixed;
   position: relative;
+  /* Optimize background image rendering */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 * {
