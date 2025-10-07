@@ -179,7 +179,7 @@ export default function AchievementOverlay({
                   id="achievement-quote"
                   className="text-base md:text-lg text-center italic text-gray-700 leading-relaxed"
                 >
-                  "{quote}"
+                  &ldquo;{quote}&rdquo;
                 </blockquote>
               </motion.div>
 
