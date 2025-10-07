@@ -3,6 +3,7 @@ export enum DoughnutType {
   BLUE = 'blue',
   GOLDEN = 'golden',
   VANILLA = 'vanilla',
+  SENSENET = 'sensenet',
 }
 
 // Special effects for power-ups

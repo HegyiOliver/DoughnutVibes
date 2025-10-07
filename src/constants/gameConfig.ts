@@ -51,12 +51,16 @@ export const STORAGE_KEYS = {
   MUSIC_ENABLED: 'doughnutvibes_music_enabled',
 };
 
-// Doughnut colors for rendering (3 types only)
+// Doughnut colors for rendering (4 types including rare SenseNet)
 export const DOUGHNUT_COLORS = {
   blue: '#0192db',
   golden: '#FFD700',
-  vanilla: '#FFF8DC',
+  vanilla: '#FFFFFF',
+  sensenet: '#e7000b',
 };
+
+// Rare doughnut spawn rate (SenseNet special doughnut)
+export const SENSENET_SPAWN_RATE = 0.02; // 2% chance
 
 // SenseNet achievement catchphrases (every 1000 points)
 export const SENSENET_CATCHPHRASES = [
@@ -77,7 +81,7 @@ export const SENSENET_CATCHPHRASES = [
   '🔮 Digital transformation accelerated!',
 ];
 
-// Level configurations (3 doughnut types: blue, golden, vanilla)
+// Level configurations (4 doughnut types: blue, golden, vanilla, and rare sensenet)
 export const LEVEL_CONFIGS = [
   { level: 1, targetScore: 1000, moves: 30, difficulty: 'easy' as const, specialDoughnutChance: 0.05, goldDoughnutChance: 0.08 },
   { level: 2, targetScore: 2000, moves: 28, difficulty: 'easy' as const, specialDoughnutChance: 0.05, goldDoughnutChance: 0.08 },

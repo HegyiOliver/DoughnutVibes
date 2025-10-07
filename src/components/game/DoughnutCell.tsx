@@ -12,13 +12,47 @@ interface DoughnutCellProps {
 }
 
 export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
-  const { selectedPiece, selectPiece, makeMove, isProcessing } = useGameStore();
+  const { selectedPiece, selectPiece, makeMove, isProcessing, updateScore, setGrid } = useGameStore();
+  const grid = useGameStore(state => state.grid);
 
   const isSelected =
     selectedPiece?.row === row && selectedPiece?.col === col;
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isProcessing) return;
+    
+    // Special handling for SenseNet doughnut - clears entire row and column
+    if (piece.type === 'sensenet') {
+      useGameStore.getState().setProcessing(true);
+      
+      // Award 1000 points immediately
+      updateScore(1000);
+      
+      // Clear the entire row and column
+      const newGrid = grid.map(r => r.map(p => ({ ...p })));
+      
+      // Mark entire row as matched
+      for (let c = 0; c < newGrid[row].length; c++) {
+        newGrid[row][c].isMatched = true;
+      }
+      
+      // Mark entire column as matched
+      for (let r = 0; r < newGrid.length; r++) {
+        newGrid[r][col].isMatched = true;
+      }
+      
+      setGrid(newGrid);
+      
+      // Drop pieces and refill after animation
+      const { dropPieces } = await import('@/utils/gridUtils');
+      setTimeout(() => {
+        const droppedGrid = dropPieces(newGrid);
+        setGrid(droppedGrid);
+        useGameStore.getState().setProcessing(false);
+      }, 600);
+      
+      return;
+    }
     
     if (selectedPiece) {
       // If there's already a selected piece, try to make a move
@@ -66,6 +100,8 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
 
   const backgroundColor = DOUGHNUT_COLORS[piece.type as keyof typeof DOUGHNUT_COLORS] || DOUGHNUT_COLORS.vanilla;
 
+  const isSenseNet = piece.type === 'sensenet';
+
   return (
     <motion.div
       initial={{ scale: 0, opacity: 0 }}
@@ -83,6 +119,7 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
           relative aspect-square rounded-xl cursor-pointer
           flex items-center justify-center
           ${isSelected ? 'ring-4 ring-sensenet-primary ring-offset-2' : ''}
+          ${isSenseNet ? 'ring-2 ring-purple-500 ring-offset-1' : ''}
           shadow-md hover:shadow-lg transition-all
           hover:scale-110 active:scale-95
         `}
@@ -116,6 +153,22 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
             }}
           />
         )}
+
+        {/* Special glow for SenseNet doughnut */}
+        {isSenseNet && (
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-purple-400 opacity-30"
+            animate={{ 
+              scale: [1, 1.15, 1],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        )}
       </div>
     </motion.div>
   );
@@ -126,6 +179,7 @@ function getDoughnutImage(type: string): string {
     blue: '/pics/doughnut_blue.png',
     golden: '/pics/doughnut_golden.png',
     vanilla: '/pics/doughnut_vanilla.png',
+    sensenet: '/sensenet-logo.svg',
   };
   return imageMap[type] || '/pics/doughnut_vanilla.png';
 }

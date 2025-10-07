@@ -2,11 +2,18 @@ import { DoughnutPiece, GridPosition, DoughnutType, SpecialEffect } from '@/type
 import { GAME_CONFIG } from '@/constants/gameConfig';
 
 /**
- * Generate a random doughnut type (3 types: blue, golden, vanilla)
- * All types have equal probability
+ * Generate a random doughnut type (4 types: blue, golden, vanilla, sensenet)
+ * SenseNet is very rare (2% chance), others have equal probability
  */
 export function generateRandomDoughnut(goldChance: number = 0.05): DoughnutType {
-  // All three doughnut types (equal probability)
+  const random = Math.random();
+  
+  // 2% chance for rare SenseNet doughnut
+  if (random < 0.02) {
+    return DoughnutType.SENSENET;
+  }
+  
+  // Remaining 98% distributed equally among blue, golden, vanilla
   const types = [
     DoughnutType.BLUE,
     DoughnutType.GOLDEN,

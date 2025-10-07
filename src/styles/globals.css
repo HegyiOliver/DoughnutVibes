@@ -46,7 +46,7 @@ h1, h2, h3, h4, h5, h6 {
   --board-bg: #8B4513;
   --accent-color: #0192db;
   --primary-color: #0192db;
-  --secondary-color: #a9eeff;
+  --secondary-color: #fffae6;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -67,7 +67,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--game-bg);
+  background-color: var(--game-bg);
+  background-image: url('/sensenet-logo.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 3000%;
+  background-attachment: fixed;
+  position: relative;
 }
 
 * {
