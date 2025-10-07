@@ -5,7 +5,7 @@ import { GAME_CONFIG } from '@/constants/gameConfig';
  * Generate a random doughnut type (4 types: blue, golden, vanilla, sensenet)
  * SenseNet is very rare (2% chance), others have equal probability
  */
-export function generateRandomDoughnut(goldChance: number = 0.05): DoughnutType {
+export function generateRandomDoughnut(_: number = 0.05): DoughnutType {
   const random = Math.random();
   
   // 2% chance for rare SenseNet doughnut

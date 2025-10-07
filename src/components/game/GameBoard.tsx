@@ -14,7 +14,7 @@ export default function GameBoard() {
       const newGrid = initializeGrid();
       setGrid(newGrid);
     }
-  }, []);
+  }, [ grid.length, setGrid]);
 
   if (grid.length === 0) {
     return (
