@@ -203,7 +203,7 @@ export default function DoughnutCell({ piece, row, col }: DoughnutCellProps) {
   const isSenseNet = piece.type === 'sensenet';
   const hasSpecialEffect = piece.specialEffect !== SpecialEffect.NONE;
   const isColorBomb = piece.specialEffect === SpecialEffect.COLOR_BOMB;
-  const isLineClear = piece.specialEffect === SpecialEffect.LINE_CLEAR_H || piece.specialEffect === SpecialEffect.LINE_CLEAR_V;
+  const _ = piece.specialEffect === SpecialEffect.LINE_CLEAR_H || piece.specialEffect === SpecialEffect.LINE_CLEAR_V;
   const isCrossClear = piece.specialEffect === SpecialEffect.CROSS_CLEAR;
   const isExplosion = piece.specialEffect === SpecialEffect.EXPLOSION;
 

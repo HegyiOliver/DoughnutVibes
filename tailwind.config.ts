@@ -22,6 +22,7 @@ const config: Config = {
           blue: '#0192db',
           golden: '#FFD700',
           vanilla: '#E3F2FD',
+          sensenet: '#e7000b',
         },
         game: {
           bg: '#FFFFFF',

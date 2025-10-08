@@ -38,29 +38,54 @@ export default function GameBoard() {
         </div>
       )}
 
-      <div
-        className={`sensenet-card p-4 border-2 border-sensenet-primary max-w-xl mx-auto ${
-          isProcessing ? 'pointer-events-none opacity-75' : ''
-        }`}
-      >
-        <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 rounded-xl p-2 border-2 border-sensenet-secondary">
+      {/* Container for QR code, game board, and logo */}
+      <div className="flex items-start justify-center gap-8">
+        {/* QR Code - Left Side */}
+        <div className="flex-shrink-0 mt-20">
+          <img 
+            src="/donutvibes_qr.png" 
+            alt="Donut Vibes QR Code" 
+            className="w-[400px] h-[400px] object-contain"
+          />
+        </div>
+
+        {/* Game Board - Center */}
+        <div className="flex-shrink-0">
           <div
-            className="grid gap-1.5"
-            style={{
-              gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
-            }}
+            className={`sensenet-card p-4 border-2 border-sensenet-primary w-[600px] ${
+              isProcessing ? 'pointer-events-none opacity-75' : ''
+            }`}
           >
-            {grid.map((row, rowIndex) =>
-              row.map((piece, colIndex) => (
-                <DoughnutCell
-                  key={piece.id}
-                  piece={piece}
-                  row={rowIndex}
-                  col={colIndex}
-                />
-              ))
-            )}
+            <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 rounded-xl p-2 border-2 border-sensenet-secondary">
+              <div
+                className="grid gap-1.5"
+                style={{
+                  gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
+                }}
+              >
+                {grid.map((row, rowIndex) =>
+                  row.map((piece, colIndex) => (
+                    <DoughnutCell
+                      key={piece.id}
+                      piece={piece}
+                      row={rowIndex}
+                      col={colIndex}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* SenseNet Logo - Right Side */}
+        <div className="flex-shrink-0 mt-20">
+          <img 
+            src="/sensenet-logo.svg" 
+            alt="SenseNet Logo" 
+            className="w-[400px] h-[400px] object-contain"
+            style={{ filter: 'brightness(0) saturate(100%) invert(37%) sepia(95%) saturate(1857%) hue-rotate(179deg) brightness(95%) contrast(101%)' }}
+          />
         </div>
       </div>
 
